@@ -14,6 +14,7 @@ import pickle
 import requests
 import wave
 import gevent
+import time
 
 from io import BytesIO
 from scipy import signal
@@ -146,9 +147,33 @@ if __name__ == '__main__':
     g_model, g_scaler = load_models_scalers(cfg.gender_model, cfg.gender_scaler)
     a_model, a_scaler = load_models_scalers(cfg.age_model, cfg.age_scaler)
 
-    voice_key, input_array = wave_transform_2_image('http://nggasrvoice.wsd.com/getvoice?voiceKey=c5fe2b99fe2280b314941efdb3dc2c41')
+    st = time.time()
+    url_list = ['http://nggasrvoice.wsd.com/getvoice?voiceKey=c5fe2b99fe2280b314941efdb3dc2c41',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=0dacf4595f26d51001107dc8253a18ee',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=bb7753925a14c22def9d77adc0c39a86',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=5701aab5137a878115e6ce3cd8728b9a',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=241492e988cda6db02c2173d8cdddc91',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=99b045f40393223dddbbfd668c76fb4a',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=42e7780ba5a7775f1ed74d8292092f07',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=3f55dce63d7a8964725d1c9adbb0fada',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=5bb2b15ecd2de7e10f4f7bbf318d9f58',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=76de2b792995aa9f8d0558d3ec0373ee',
+                'http://nggasrvoice.wsd.com/getvoice?voiceKey=9f201c8c1a0e69b18d12ce3c995bb746']
 
-    threads = gevent.joinall([gevent.spawn(recognize_gender, input_array, g_model, g_scaler),
-                              gevent.spawn(recognize_age, input_array, a_model, a_scaler)])
+    for i in url_list:
+        et = time.time()
+        voice_key, input_array = wave_transform_2_image(i)
 
-    print(voice_key, [thread.value for thread in threads])
+        # 采用协程
+        threads = gevent.joinall([gevent.spawn(recognize_gender, input_array, g_model, g_scaler),
+                                  gevent.spawn(recognize_age, input_array, a_model, a_scaler)])
+        print(voice_key, [thread.value for thread in threads])
+
+        # 不采用协程
+        # r1, p1 = recognize_gender(input_array, g_model, g_scaler)
+        # r2, p2 = recognize_age(input_array, a_model, a_scaler)
+        # print(voice_key, r1, p1, r2, p2)
+
+        print(time.time() - et)
+
+    print('有协程：', time.time() - st)
