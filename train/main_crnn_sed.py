@@ -169,7 +169,7 @@ def recognize(args, at_bool):
     x = do_scale(x, args.scaler_path, verbose=1)
     
     fusion_at_list = []
-    for epoch in range(21, 31):
+    for epoch in range(30, 31):
         t1 = time.time()
         [model_path] = glob.glob(os.path.join(args.model_dir, "*.%02d-0.*.hdf5" % epoch))
         model = load_model(model_path)
